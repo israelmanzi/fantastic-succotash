@@ -17,9 +17,13 @@
 
 import cv2
 import pytesseract
+import numpy as np
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-img = cv2.imread(r"sample_image.png")
+img_path = r"sample_image.png"
+
+with open(img_path, 'rb') as f:
+    img = cv2.imdecode(np.frombuffer(f.read(), np.uint8), cv2.IMREAD_COLOR)
 
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -35,19 +39,14 @@ contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL,
 im2 = img.copy()
 
 # Creating a text file to write the output to
-file = open("result.txt", "w+")
-file.write("")
-file.close()
+with open("result.txt", "w+") as file:
+    file.write("")
 
 for cnt in contours:
     x, y, w, h = cv2.boundingRect(cnt)
     rect = cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cropped = im2[y:y + h, x:x + w]
 
-    file = open("result.txt", "a")
-    text = pytesseract.image_to_string(cropped)
-
-    file.write(text)
-    file.write("\n")
-
-    file.close
+    with open("result.txt", "a") as file:
+        text = pytesseract.image_to_string(cropped)
+        file.write(text + "\n")
